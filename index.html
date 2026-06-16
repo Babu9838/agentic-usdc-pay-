@@ -6,7 +6,7 @@
     <title>Arc Multichain AI USDC Agent Controller</title>
     <!-- Tailwind CSS Engine -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Ethers.js Dependency Loader -->
+    <!-- Ethers.js Framework Loader -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 </head>
 <body class="bg-slate-900 text-white font-sans min-h-screen flex flex-col justify-between">
@@ -23,9 +23,12 @@
         </div>
         
         <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-            <select id="chainSelector" onchange="switchNetworkLayout()" class="bg-slate-800 border border-slate-700 text-xs font-mono rounded-full px-4 py-2 text-cyan-400 focus:outline-none cursor-pointer">
-                <option value="arc-testnet" selected>⚡ ARC Dev-Testnet</option>
-                <option value="base-sepolia">🌐 Base Sepolia</option>
+            <!-- Dynamic Chain Selector Menu -->
+            <select id="chainSelector" onchange="handleNetworkSwitch()" class="bg-slate-800 border border-slate-700 text-xs font-mono rounded-full px-4 py-2 text-cyan-400 focus:outline-none cursor-pointer">
+                <option value="11155111" selected>🌐 Ethereum Sepolia</option>
+                <option value="421614">⚡ Arbitrum Sepolia</option>
+                <!-- আপনি যদি Arc Testnet এর chainId জানেন, তাহলে 0x... এর জায়গায় সেটি বসিয়ে নেবেন (যেমন: 404) -->
+                <option value="404">🌀 ARC Dev-Testnet</option>
             </select>
 
             <button id="connectBtn" onclick="connectWallet()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2 px-4 rounded-full text-sm font-mono transition duration-200 cursor-pointer whitespace-nowrap">
@@ -51,10 +54,10 @@
                 </div>
                 <div>
                     <span class="text-slate-400 block text-xs">Active Network Layer</span>
-                    <span id="activeNetworkDisplay" class="text-cyan-400 font-bold">ARC Dev-Testnet</span>
+                    <span id="activeNetworkDisplay" class="text-cyan-400 font-bold">Ethereum Sepolia</span>
                 </div>
                 <div>
-                    <span class="text-slate-400 block text-xs">USDC Balance Balance</span>
+                    <span class="text-slate-400 block text-xs">USDC Live Balance</span>
                     <span id="usdcBalanceDisplay" class="text-emerald-400 font-bold">0.00 USDC</span>
                 </div>
             </div>
@@ -72,7 +75,7 @@
             </button>
         </div>
 
-        <!-- AI Console Output Output -->
+        <!-- AI Console Output -->
         <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between">
             <div>
                 <h2 class="text-lg font-semibold mb-4 text-cyan-400 font-mono">>_ Agent Output Console</h2>
@@ -85,14 +88,49 @@
 
     </main>
 
-    <!-- Script Routing Operations -->
+    <footer class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">
+        Utilizing Arc Unified Balance Engine & Interchain Bridge Protocol
+    </footer>
+
+    <!-- INTERCEPT MULTI-CHAIN ENGINE SCRIPT -->
     <script>
         let provider, signer, userWalletAddress;
-        const usdcContractAddress = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; 
+
+        // Dynamic Network Metadata Registry
+        const networkRegistry = {
+            "11155111": {
+                name: "Ethereum Sepolia",
+                usdcAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+                decimals: 6,
+                hexId: "0xaa36a7",
+                explorer: "https://sepolia.etherscan.io/tx/"
+            },
+            "421614": {
+                name: "Arbitrum Sepolia",
+                usdcAddress: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+                decimals: 6,
+                hexId: "0x66eee",
+                explorer: "https://sepolia.arbiscan.io/tx/"
+            },
+            "404": { // Assuming ARC Testnet ID is 404, replace if needed
+                name: "ARC Dev-Testnet",
+                usdcAddress: "0x3600000000000000000000000000000000000000",
+                decimals: 6,
+                hexId: "0x194", // Hex of 404
+                explorer: "https://explorer.arc.market/tx/" // Example explorer URL
+            }
+        };
+
         const usdcAbi = [
             "function balanceOf(address account) view returns (uint256)",
             "function transfer(address to, uint256 amount) returns (bool)"
         ];
+
+        // Fetch current active config parameters
+        function getActiveConfig() {
+            const selectedId = document.getElementById('chainSelector').value;
+            return networkRegistry[selectedId];
+        }
 
         async function connectWallet() {
             const consoleLog = document.getElementById('consoleLog');
@@ -108,72 +146,102 @@
                     document.getElementById('walletStatus').className = "text-emerald-400 font-bold";
                     document.getElementById('walletAddress').innerText = userWalletAddress;
 
-                    consoleLog.innerHTML += `<p class="text-emerald-400">[RPC Connected]: Session active.</p>`;
-                    fetchLiveUSDCBalance();
+                    consoleLog.innerHTML += `<p class="text-emerald-400">[RPC Live]: Connected to ${userWalletAddress}</p>`;
+                    
+                    // Trigger network alignment immediately upon connection
+                    await handleNetworkSwitch();
                 } catch (error) {
-                    consoleLog.innerHTML += `<p class="text-red-400">[Error]: Signer request denied.</p>`;
+                    consoleLog.innerHTML += `<p class="text-red-400">[Error]: Connection signature denied.</p>`;
                 }
             } else {
-                alert("Please install MetaMask wallet app context container!");
+                alert("Please install MetaMask!");
+            }
+        }
+
+        async function handleNetworkSwitch() {
+            const config = getActiveConfig();
+            const consoleLog = document.getElementById('consoleLog');
+            document.getElementById('activeNetworkDisplay').innerText = config.name;
+
+            if (!window.ethereum || !userWalletAddress) return;
+
+            try {
+                // Request MetaMask to switch chain dynamically
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: config.hexId }],
+                });
+                
+                // Re-instantiate provider context post-switch
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                
+                consoleLog.innerHTML += `<p class="text-cyan-400">[Network Switch]: Switched tracking nodes to ${config.name}</p>`;
+                fetchLiveUSDCBalance();
+            } catch (error) {
+                consoleLog.innerHTML += `<p class="text-yellow-500">[Notice]: Please confirm network switch prompt inside your wallet.</p>`;
             }
         }
 
         async function fetchLiveUSDCBalance() {
             if (!userWalletAddress || !provider) return;
+            const config = getActiveConfig();
             try {
-                const contract = new ethers.Contract(usdcContractAddress, usdcAbi, provider);
+                const contract = new ethers.Contract(config.usdcAddress, usdcAbi, provider);
                 const rawBalance = await contract.balanceOf(userWalletAddress);
-                document.getElementById('usdcBalanceDisplay').innerText = `${ethers.formatUnits(rawBalance, 6)} USDC`;
+                const standardUnits = ethers.formatUnits(rawBalance, config.decimals);
+                document.getElementById('usdcBalanceDisplay').innerText = `${parseFloat(standardUnits).toFixed(2)} USDC`;
             } catch (err) {
-                document.getElementById('usdcBalanceDisplay').innerText = "100.00 USDC (Simulated)";
+                document.getElementById('usdcBalanceDisplay').innerText = "0.00 USDC";
             }
         }
 
-        function switchNetworkLayout() {
-            const selectedChain = document.getElementById('chainSelector').value;
-            document.getElementById('activeNetworkDisplay').innerText = selectedChain === "arc-testnet" ? "ARC Dev-Testnet" : "Base Sepolia";
-            fetchLiveUSDCBalance();
-        }
-
-        // Optimized Flexible Parsing Engine Loop
         async function executeAgentAction() {
             const prompt = document.getElementById('userInput').value;
             const consoleLog = document.getElementById('consoleLog');
             const txStatus = document.getElementById('txStatus');
+            const config = getActiveConfig();
 
-            if (!userWalletAddress) {
+            if (!userWalletAddress || !signer) {
                 alert("Please click 'Connect Wallet' first!");
                 return;
             }
 
-            // Enhanced fallback routing parser values
             const numbersFound = prompt.match(/\d+/);
             const addressFound = prompt.match(/0x[a-fA-F0-9]{40}/);
 
-            // Automatic parameters configuration defaults injection if user inputs are raw
-            const finalAmount = numbersFound ? numbersFound[0] : "1"; 
-            const finalAddress = addressFound ? addressFound[0] : userWalletAddress; 
+            if (!numbersFound || !addressFound) {
+                alert("AI Engine: Please input details properly (e.g., 'Send 10 to 0x...')");
+                return;
+            }
 
-            consoleLog.innerHTML += `<p class="text-yellow-400">[Intent Processed]: Send ${finalAmount} USDC to ${finalAddress}</p>`;
+            const finalAmount = numbersFound[0];
+            const finalAddress = addressFound[0];
+
+            consoleLog.innerHTML += `<p class="text-yellow-400">[AI Agent]: Parsing route on ${config.name} for ${finalAmount} USDC...</p>`;
             consoleLog.scrollTop = consoleLog.scrollHeight;
 
             try {
-                const contract = new ethers.Contract(usdcContractAddress, usdcAbi, signer);
-                const amountUnits = ethers.parseUnits(finalAmount, 6);
+                const contract = new ethers.Contract(config.usdcAddress, usdcAbi, signer);
+                const amountUnits = ethers.parseUnits(finalAmount, config.decimals);
                 
-                consoleLog.innerHTML += `<p class="text-purple-400">[Agent Call]: Dispatching write pipeline signature data payload...</p>`;
+                consoleLog.innerHTML += `<p class="text-purple-400">[Wallet]: Prompting payload signature confirmation...</p>`;
                 const txResponse = await contract.transfer(finalAddress, amountUnits);
                 
-                consoleLog.innerHTML += `<p class="text-yellow-500">[Pending]: Awaiting chain confirmation block parsing... Hash: ${txResponse.hash.substring(0,12)}</p>`;
+                consoleLog.innerHTML += `<p class="text-yellow-500">[Pending]: Waiting for block inclusion... Hash: ${txResponse.hash.substring(0,14)}...</p>`;
+                consoleLog.scrollTop = consoleLog.scrollHeight;
+                
                 const receipt = await txResponse.wait();
                 
-                consoleLog.innerHTML += `<p class="text-emerald-400">[Success]: Operation complete!</p>`;
-                txStatus.innerHTML = `💸 Tx Log: <a href="https://sepolia.basescan.org/tx/${receipt.hash}" target="_blank" class="text-cyan-400 underline font-bold">View Blocks</a>`;
+                consoleLog.innerHTML += `<p class="text-emerald-400">[Success]: Transferred ${finalAmount} USDC inside ${config.name}!</p>`;
+                txStatus.innerHTML = `💸 Tx Log: <a href="${config.explorer}${receipt.hash}" target="_blank" class="text-cyan-400 underline font-bold">View on Explorer</a>`;
                 txStatus.classList.remove('hidden');
+                txStatus.className = "mt-4 p-3 rounded-xl text-center text-sm font-mono bg-cyan-950/40 border border-cyan-800 text-cyan-400";
                 
-                fetchLiveUSDCBalance();
+                setTimeout(fetchLiveUSDCBalance, 2000);
             } catch (error) {
-                consoleLog.innerHTML += `<p class="text-red-400">[Execution Halted]: ${error.message.substring(0,50)}...</p>`;
+                consoleLog.innerHTML += `<p class="text-red-400">[Halted]: ${error.message.substring(0,60)}...</p>`;
+                consoleLog.scrollTop = consoleLog.scrollHeight;
             }
         }
     </script>
