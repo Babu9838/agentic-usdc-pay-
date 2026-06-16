@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arc Multichain AI USDC Agent Controller</title>
+    <!-- Tailwind CSS Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-900 text-white font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="p-6 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <h1 class="text-xl font-bold tracking-wider text-cyan-400">🤖 ARC MULTICHAIN AGENT</h1>
+        
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <!-- Full Integrated Dropdown Selector -->
+            <select id="chainSelector" onchange="switchNetworkLayout()" class="bg-slate-800 border border-slate-700 text-xs font-mono rounded-full px-4 py-2 text-cyan-400 focus:outline-none cursor-pointer">
+                <option value="arc-testnet" selected>⚡ ARC Dev-Testnet</option>
+                <option value="base">🌐 Base Sepolia</option>
+                <option value="ethereum">🌐 Ethereum Mainnet</option>
+                <option value="arbitrum">🌐 Arbitrum One</option>
+                <option value="optimism">🌐 Optimism Layer</option>
+                <option value="polygon">🌐 Polygon Network</option>
+            </select>
+
+            <!-- Web3 Wallet Button -->
+            <button id="connectBtn" onclick="connectWallet()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2 px-4 rounded-full text-sm font-mono transition duration-200 cursor-pointer whitespace-nowrap">
+                🦊 Connect Wallet
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="max-w-6xl mx-auto my-auto p-6 w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Column 1: Live Wallet Stats -->
+        <div class="bg-slate-800/30 p-6 rounded-2xl border border-slate-800 backdrop-blur-md">
+            <h2 class="text-lg font-semibold mb-4 text-emerald-400">📊 Wallet Session</h2>
+            <div class="space-y-4 text-sm font-mono">
+                <div>
+                    <span class="text-slate-400 block text-xs">Status</span>
+                    <span id="walletStatus" class="text-red-400 font-bold">Disconnected</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-xs">Account Address</span>
+                    <span id="walletAddress" class="text-slate-300 break-all text-xs">Not connected yet</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-xs">Active Network Layer</span>
+                    <span id="activeNetworkDisplay" class="text-cyan-400 font-bold">ARC Dev-Testnet</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-xs">Target Stablecoin</span>
+                    <span class="text-emerald-400 font-bold">USDC (Unified Balance)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 2: User Prompt Controls -->
+        <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 backdrop-blur-md">
+            <h2 class="text-lg font-semibold mb-4 text-slate-200">Talk to Agent</h2>
+            <p class="text-xs text-slate-400 mb-4">Give instructions. The Agent will route traffic automatically based on the chosen chain context.</p>
+            
+            <textarea id="userInput" rows="4" class="w-full p-4 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-cyan-400 font-mono text-sm text-white" placeholder="Type instructions here..."></textarea>
+            
+            <button onclick="executeAgentAction()" class="mt-4 w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-3 px-6 rounded-xl transition duration-200 cursor-pointer">
+                Run AI Agent Action
+            </button>
+        </div>
+
+        <!-- Column 3: AI Console Log Output -->
+        <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between">
+            <div>
+                <h2 class="text-lg font-semibold mb-4 text-cyan-400 font-mono">>_ Agent Output Console</h2>
+                <div id="consoleLog" class="font-mono text-xs text-slate-300 space-y-2 max-h-60 overflow-y-auto">
+                    <p class="text-slate-500">[System]: Multichain node framework ready. Connect wallet to link account session...</p>
+                </div>
+            </div>
+            
+            <!-- Dynamic Status Component -->
+            <div id="txStatus" class="mt-4 p-3 rounded-xl text-center text-sm font-mono hidden"></div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">
+        Utilizing Arc Unified Balance Engine & Interchain Bridge Protocol
+    </footer>
+
+    <!-- Frontend Web3 Routing Script Logic -->
+    <script>
+        let userWalletAddress = null;
+
+        // 1. Wallet Setup Handler
+        async function connectWallet() {
+            const consoleLog = document.getElementById('consoleLog');
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    userWalletAddress = accounts[0];
+                    
+                    document.getElementById('connectBtn').innerText = `🔗 ${userWalletAddress.substring(0,6)}...${userWalletAddress.substring(userWalletAddress.length - 4)}`;
+                    document.getElementById('connectBtn').classList.replace('bg-emerald-500', 'bg-slate-800');
+                    document.getElementById('connectBtn').classList.add('text-emerald-400', 'border', 'border-emerald-800');
+
+                    document.getElementById('walletStatus').innerText = "Connected";
+                    document.getElementById('walletStatus').classList.replace('text-red-400', 'text-emerald-400');
+                    document.getElementById('walletAddress').innerText = userWalletAddress;
+
+                    consoleLog.innerHTML += `<p class="text-emerald-400">[System]: Secure wallet validation synced for address ${userWalletAddress}</p>`;
+                    consoleLog.scrollTop = consoleLog.scrollHeight;
+                } catch (error) {
+                    consoleLog.innerHTML += `<p class="text-red-400">[Error]: Session authentication rejected by user.</p>`;
+                }
+            } else {
+                alert("Crypto wallet extension not detected! Please install Metamask.");
+            }
+        }
+
+        // 2. Multichain Switch Event Handler
+        function switchNetworkLayout() {
+            const selectedChain = document.getElementById('chainSelector').value;
+            const networkDisplay = document.getElementById('activeNetworkDisplay');
+            const consoleLog = document.getElementById('consoleLog');
+
+            let formatName = "";
+            if(selectedChain === "arc-testnet") formatName = "ARC Dev-Testnet";
+            if(selectedChain === "base") formatName = "Base Sepolia";
+            if(selectedChain === "ethereum") formatName = "Ethereum Mainnet";
+            if(selectedChain === "arbitrum") formatName = "Arbitrum One";
+            if(selectedChain === "optimism") formatName = "Optimism Layer";
+            if(selectedChain === "polygon") formatName = "Polygon Network";
+
+            networkDisplay.innerText = formatName;
+
+            if(selectedChain === "arc-testnet") {
+                consoleLog.innerHTML += `<p class="text-purple-400">[ARC Context Activated]: Stablecoin multi-inventory balance unified under ARC RPC Layer.</p>`;
+            } else {
+                consoleLog.innerHTML += `<p class="text-cyan-400">[System Network Shift]: Target context updated to -> <b>${formatName}</b></p>`;
+            }
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+
+        // 3. Simulated Transaction Dispatcher
+        async function executeAgentAction() {
+            const prompt = document.getElementById('userInput').value;
+            const consoleLog = document.getElementById('consoleLog');
+            const txStatus = document.getElementById('txStatus');
+            const targetChain = document.getElementById('chainSelector').value;
+
+            if (!userWalletAddress) {
+                alert("Connect your wallet first!");
+                return;
+            }
+
+            if (!prompt.trim()) {
+                alert("Please write a command text for the agent!");
+                return;
+            }
+
+            consoleLog.innerHTML += `<p class="text-yellow-400">[User]: ${prompt}</p>`;
+            consoleLog.innerHTML += `<p class="text-cyan-400">[Agent Engine]: Parsing context mapping data...</p>`;
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+
+            setTimeout(() => {
+                consoleLog.innerHTML += `<p class="text-slate-400">[Agent]: Verified intent for network key: <b>${targetChain.toUpperCase()}</b></p>`;
+                
+                if(targetChain === "arc-testnet") {
+                    consoleLog.innerHTML += `<p class="text-purple-400">[ARC Native Execute]: Utilizing App Kit deterministic settlement path...</p>`;
+                } else {
+                    consoleLog.innerHTML += `<p class="text-slate-500">[Bridge Check]: Requesting cross-chain liquidity verification...</p>`;
+                }
+                consoleLog.scrollTop = consoleLog.scrollHeight;
+                
+                setTimeout(() => {
+                    consoleLog.innerHTML += `<p class="text-emerald-400">[Success]: Transaction signed and broadcasted successfully!</p>`;
+                    
+                    txStatus.innerHTML = `💸 Tx Verified on ${targetChain.toUpperCase()}: <a href="#" class="text-cyan-400 underline font-bold">0x9a3b...4e7d</a>`;
+                    txStatus.classList.remove('hidden');
+                    txStatus.className = "mt-4 p-3 rounded-xl text-center text-sm font-mono bg-cyan-950/30 border border-cyan-800 text-cyan-400";
+                    consoleLog.scrollTop = consoleLog.scrollHeight;
+                }, 1500);
+
+            }, 1000);
+        }
+    </script>
+</body>
+  </html>
+  
