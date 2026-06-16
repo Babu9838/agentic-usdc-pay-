@@ -100,8 +100,6 @@
 
         async function connectWallet() {
             const consoleLog = document.getElementById('consoleLog');
-            
-            // Brave Wallet compatibility handshake (prefers window.ethereum injected by Brave)
             const walletProvider = window.ethereum;
 
             if (walletProvider) {
@@ -116,17 +114,15 @@
                     document.getElementById('walletStatus').className = "text-emerald-400 font-bold";
                     document.getElementById('walletAddress').innerText = userWalletAddress;
 
-                    // Get the exact chain ID from Brave Wallet directly
                     const network = await provider.getNetwork();
                     currentChainId = network.chainId.toString();
                     document.getElementById('activeNetworkDisplay').innerText = `Chain ID: ${currentChainId}`;
                     
-                    consoleLog.innerHTML += `<p class="text-emerald-400">[Brave Hook]: Connected successfully. Active Chain: ${currentChainId}</p>`;
+                    consoleLog.innerHTML += `<p class="text-emerald-400">[Brave Hook]: Hook active. Current Chain: ${currentChainId}</p>`;
                     
                     fetchLiveUSDCBalance();
 
-                    // Listen for manual chain changes inside Brave Wallet interface
-                    walletProvider.on('chainChanged', (chainIdHex) => {
+                    walletProvider.on('chainChanged', () => {
                         window.location.reload();
                     });
 
@@ -134,7 +130,7 @@
                     consoleLog.innerHTML += `<p class="text-red-400">[Error]: Connection refused: ${error.message}</p>`;
                 }
             } else {
-                alert("Brave Wallet not detected. Please enable it in Brave Settings!");
+                alert("Brave Wallet not detected.");
             }
         }
 
@@ -148,38 +144,33 @@
                         params: [{ chainId: hexId }],
                     });
                 } catch (e) {
-                    document.getElementById('consoleLog').innerHTML += `<p class="text-yellow-500">[Notice]: Please switch network inside Brave Wallet manually.</p>`;
+                    document.getElementById('consoleLog').innerHTML += `<p class="text-yellow-500">[Notice]: Switch network inside Brave Wallet panel manually.</p>`;
                 }
             }
         }
 
         async function fetchLiveUSDCBalance() {
             if (!userWalletAddress || !provider) return;
-            const consoleLog = document.getElementById('consoleLog');
-            
-            // Determine which contract address to target
             let targetContract = tokenContracts[currentChainId] || tokenContracts["DEFAULT_ARC"];
             
             try {
                 const contract = new ethers.Contract(targetContract, usdcAbi, provider);
                 let rawBalance = await contract.balanceOf(userWalletAddress);
                 
-                // Smart Decimal Detection Loop (Tries 6 decimals first, if 0 or weird, allows 18 fallback checking)
                 let balanceDec6 = ethers.formatUnits(rawBalance, 6);
                 let balanceDec18 = ethers.formatUnits(rawBalance, 18);
 
-                // If balance with 6 decimals is 0, but 18 decimals gives a proper structure, switch to 18
                 if (parseFloat(balanceDec6) === 0 && parseFloat(balanceDec18) > 0) {
                     document.getElementById('usdcBalanceDisplay').innerText = `${parseFloat(balanceDec18).toFixed(2)} USDC`;
                 } else {
                     document.getElementById('usdcBalanceDisplay').innerText = `${parseFloat(balanceDec6).toFixed(2)} USDC`;
                 }
             } catch (err) {
-                consoleLog.innerHTML += `<p class="text-slate-500">[RPC Scan]: Reading alternative custom balance nodes...</p>`;
                 document.getElementById('usdcBalanceDisplay').innerText = "0.00 USDC";
             }
         }
 
+        // ABSOLUTE WRITE PIPELINE FOR ACTUAL TRANSACTIONS
         async function executeAgentAction() {
             const prompt = document.getElementById('userInput').value;
             const consoleLog = document.getElementById('consoleLog');
@@ -194,7 +185,7 @@
             const addressFound = prompt.match(/0x[a-fA-F0-9]{40}/);
 
             if (!numbersFound || !addressFound) {
-                alert("AI Engine: Please input format correctly (e.g., 'Send 5 to 0x...')");
+                alert("AI Engine: Missing transaction parameters! E.g. 'Send 5 to 0x...'");
                 return;
             }
 
@@ -202,16 +193,15 @@
             const finalAddress = addressFound[0];
             let targetContract = tokenContracts[currentChainId] || tokenContracts["DEFAULT_ARC"];
 
-            consoleLog.innerHTML += `<p class="text-yellow-400">[AI Action]: Routing ${finalAmount} USDC transaction directly via Brave pipeline...</p>`;
+            consoleLog.innerHTML += `<p class="text-yellow-400">[AI Action]: Initiating live transfer of ${finalAmount} USDC on Chain ${currentChainId}...</p>`;
 
             try {
                 const contract = new ethers.Contract(targetContract, usdcAbi, signer);
                 
-                // Match exact fallback decimals configuration for the transfer payload
+                // Set appropriate decimals format
                 let decimals = 6;
                 let displayBalance = document.getElementById('usdcBalanceDisplay').innerText;
-                if (displayBalance.includes("76") || displayBalance === "0.00") {
-                    // Test fallback checking if it's an 18-decimal token standard
+                if (displayBalance !== "0.00") {
                     try {
                         let rawBal = await contract.balanceOf(userWalletAddress);
                         if (parseFloat(ethers.formatUnits(rawBal, 18)) > 0) decimals = 18;
@@ -220,22 +210,27 @@
 
                 const amountUnits = ethers.parseUnits(finalAmount, decimals);
                 
-                consoleLog.innerHTML += `<p class="text-purple-400">[Brave Wallet]: Confirm the signature pop-up window...</p>`;
-                const txResponse = await contract.transfer(finalAddress, amountUnits);
-                
-                consoleLog.innerHTML += `<p class="text-yellow-500">[Pending]: Waiting for block confirmation... Hash: ${txResponse.hash.substring(0,14)}</p>`;
+                consoleLog.innerHTML += `<p class="text-purple-400">[Brave Wallet]: POP-UP triggered. Please 'CONFIRM' the transaction fee in your wallet window...</p>`;
                 consoleLog.scrollTop = consoleLog.scrollHeight;
                 
+                // 🚀 এই লাইনটি সরাসরি Brave Wallet-এর পপ-আপ ওপেন করবে ট্রানজ্যাকশন কাটার জন্য
+                const txResponse = await contract.transfer(finalAddress, amountUnits);
+                
+                consoleLog.innerHTML += `<p class="text-yellow-500">[On-Chain Pending]: Broadcast success. Awaiting block miners confirmation... Hash: ${txResponse.hash.substring(0,16)}...</p>`;
+                consoleLog.scrollTop = consoleLog.scrollHeight;
+                
+                // Wait for blockchain transaction block inclusion confirmation
                 const receipt = await txResponse.wait();
                 
-                consoleLog.innerHTML += `<p class="text-emerald-400">[Success]: Transaction confirmed on-chain!</p>`;
-                txStatus.innerHTML = `💸 Success! Tx Block: <a href="https://sepolia.etherscan.io/tx/${receipt.hash}" target="_blank" class="text-cyan-400 underline font-bold">View Ledger</a>`;
+                consoleLog.innerHTML += `<p class="text-emerald-400">[On-Chain Success]: TKN asset extracted and route completed successfully!</p>`;
+                txStatus.innerHTML = `💸 Confirmed Block Receipt: <a href="https://sepolia.etherscan.io/tx/${receipt.hash}" target="_blank" class="text-cyan-400 underline font-bold">View Ledger</a>`;
                 txStatus.classList.remove('hidden');
                 txStatus.className = "mt-4 p-3 rounded-xl text-center text-sm font-mono bg-cyan-950/40 border border-cyan-800 text-cyan-400";
                 
+                // 🔄 ট্রানজ্যাকশন শেষ হওয়ার ২ সেকেন্ড পর ব্লকচেইন থেকে সরাসরি নতুন ব্যালেন্স রিড করবে
                 setTimeout(fetchLiveUSDCBalance, 2000);
             } catch (error) {
-                consoleLog.innerHTML += `<p class="text-red-400">[Failed]: Signature rejected or Gas error: ${error.message.substring(0,55)}...</p>`;
+                consoleLog.innerHTML += `<p class="text-red-400">[Transaction Failed/Rejected]: ${error.message.substring(0,65)}...</p>`;
                 consoleLog.scrollTop = consoleLog.scrollHeight;
             }
         }
