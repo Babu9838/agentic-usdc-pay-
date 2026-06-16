@@ -9,16 +9,15 @@
 </head>
 <body class="bg-slate-900 text-white font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- Header Section with New High-Quality Logo -->
+    <!-- Header Section with Updated Secure Logo URL -->
     <header class="p-6 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <!-- Logo and Brand Title Wrapper -->
         <div class="flex items-center gap-3 w-full sm:w-auto justify-start">
-            <img src="1000227687.jpg" alt="Arc Logo" class="h-10 w-10 object-cover rounded-xl border border-slate-700 shadow-md shadow-cyan-500/10">
+            <!-- Fixed Image Tag with Online CDN Source -->
+            <img src="https://images.squarespace-cdn.com/content/v1/660c1bf6eec50a283ee91e92/68903e1b-b4d2-4309-b684-0bdf60ffb342/arc_logo.jpg" alt="Arc Logo" class="h-10 w-10 object-cover rounded-xl border border-slate-700 shadow-md shadow-cyan-500/10" onerror="this.src='1000227687.jpg'">
             <h1 class="text-xl font-bold tracking-wider text-cyan-400">ARC MULTICHAIN AGENT</h1>
         </div>
         
         <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-            <!-- Full Integrated Dropdown Selector -->
             <select id="chainSelector" onchange="switchNetworkLayout()" class="bg-slate-800 border border-slate-700 text-xs font-mono rounded-full px-4 py-2 text-cyan-400 focus:outline-none cursor-pointer">
                 <option value="arc-testnet" selected>⚡ ARC Dev-Testnet</option>
                 <option value="base">🌐 Base Sepolia</option>
@@ -28,7 +27,6 @@
                 <option value="polygon">🌐 Polygon Network</option>
             </select>
 
-            <!-- Web3 Wallet Button -->
             <button id="connectBtn" onclick="connectWallet()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2 px-4 rounded-full text-sm font-mono transition duration-200 cursor-pointer whitespace-nowrap">
                 🦊 Connect Wallet
             </button>
@@ -82,18 +80,16 @@
                 </div>
             </div>
             
-            <!-- Dynamic Status Component -->
             <div id="txStatus" class="mt-4 p-3 rounded-xl text-center text-sm font-mono hidden"></div>
         </div>
 
     </main>
 
-    <!-- Footer -->
     <footer class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">
         Utilizing Arc Unified Balance Engine & Interchain Bridge Protocol
     </footer>
 
-    <!-- Frontend Web3 Script Logic -->
+    <!-- Frontend Web3 Routing Script Logic -->
     <script>
         let userWalletAddress = null;
 
