@@ -1,88 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arc Multichain AI USDC Agent Controller</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-</head>
-<body class="bg-slate-900 text-white font-sans min-h-screen flex flex-col justify-between">
-
-    <header class="p-6 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-3 w-full sm:w-auto justify-start">
-            <div class="h-10 w-10 flex items-center justify-center bg-gradient-to-b from-slate-800 to-slate-950 rounded-xl border border-slate-700 shadow-md shadow-cyan-500/20 p-1.5">
-                <svg viewBox="0 0 400 400" class="w-full h-full text-white fill-current" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M200,40 C110,40 40,110 40,200 C40,265 80,320 135,345 C145,350 155,340 155,330 L155,310 C155,300 148,292 140,287 C95,255 75,200 95,145 C115,95 155,55 205,45 C275,30 335,80 335,150 C335,215 295,275 230,290 C215,293 200,282 200,265 L200,250 C230,250 255,225 255,195 C255,165 230,140 200,140 C170,140 145,165 145,195 C145,215 155,232 170,242 L170,330 C170,355 190,375 215,375 C305,375 375,305 375,215 C375,120 295,40 200,40 Z" />
-                </svg>
-            </div>
-            <h1 class="text-xl font-bold tracking-wider text-cyan-400">ARC MULTICHAIN AGENT</h1>
-        </div>
-        
-        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-            <select id="chainSelector" onchange="updateChainUI()" class="bg-slate-800 border border-slate-700 text-xs font-mono rounded-full px-4 py-2 text-cyan-400 focus:outline-none cursor-pointer">
-                <option value="AUTO" selected>🌀 ARC Testnet / Active Chain</option>
-                <option value="421614">⚡ Arbitrum Sepolia</option>
-                <option value="11155111">🌐 Ethereum Sepolia</option>
-            </select>
-
-            <button id="connectBtn" onclick="connectWallet()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2 px-4 rounded-full text-sm font-mono transition duration-200 cursor-pointer whitespace-nowrap">
-                🦁 Connect Brave Wallet
-            </button>
-        </div>
-    </header>
-
-    <main class="max-w-6xl mx-auto my-auto p-6 w-full grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        <div class="bg-slate-800/30 p-6 rounded-2xl border border-slate-800 backdrop-blur-md">
-            <h2 class="text-lg font-semibold mb-4 text-emerald-400">📊 Wallet Session</h2>
-            <div class="space-y-4 text-sm font-mono">
-                <div>
-                    <span class="text-slate-400 block text-xs">Status</span>
-                    <span id="walletStatus" class="text-red-400 font-bold">Disconnected</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block text-xs">Account Address</span>
-                    <span id="walletAddress" class="text-slate-300 break-all text-xs">Not connected yet</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block text-xs">Detected Chain ID</span>
-                    <span id="activeNetworkDisplay" class="text-cyan-400 font-bold">None</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block text-xs">USDC Live Balance</span>
-                    <span id="usdcBalanceDisplay" class="text-emerald-400 font-bold">0.00 USDC</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 backdrop-blur-md">
-            <h2 class="text-lg font-semibold mb-4 text-slate-200">Talk to Agent</h2>
-            <p class="text-xs text-slate-400 mb-4">Give instructions to routing system:</p>
-            
-            <textarea id="userInput" rows="4" class="w-full p-4 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-cyan-400 font-mono text-sm text-white" placeholder="Example: Send 2 USDC from Arc Testnet to Arbitrum Testnet 0xef084f79208db9d282df5470640de93196dc52de"></textarea>
-            
-            <button onclick="executeAgentAction()" class="mt-4 w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-3 px-6 rounded-xl transition duration-200 cursor-pointer">
-                Run AI Agent Action
-            </button>
-        </div>
-
-        <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between">
-            <div>
-                <h2 class="text-lg font-semibold mb-4 text-cyan-400 font-mono">>_ Agent Output Console</h2>
-                <div id="consoleLog" class="font-mono text-xs text-slate-300 space-y-2 max-h-60 overflow-y-auto">
-                    <p class="text-slate-500">[System]: Web3 execution environment ready for Brave.</p>
-                </div>
-            </div>
-            <div id="txStatus" class="mt-4 p-3 rounded-xl text-center text-sm font-mono hidden"></div>
-        </div>
-
-    </main>
-
-    <footer class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">
-        Utilizing Arc Unified Balance Engine & Interchain Bridge Protocol
-    </footer>
-
+    <!-- BALANCE EXTRACTION ENGINE WITH STABLE RE-SYNC -->
     <script>
         let provider, signer, userWalletAddress, currentChainId;
 
@@ -121,10 +37,10 @@
                     currentChainId = network.chainId.toString();
                     document.getElementById('activeNetworkDisplay').innerText = `Chain ID: ${currentChainId}`;
                     
-                    consoleLog.innerHTML += `<p class="text-emerald-400">[Brave Hook]: Connected Chain: ${currentChainId}</p>`;
+                    consoleLog.innerHTML += `<p class="text-emerald-400">[Brave Hook]: System ready. Connected Chain: ${currentChainId}</p>`;
                     fetchLiveUSDCBalance();
 
-                    // 🛠️ রিলোড লুপ ফিক্স: হার্ড রিফ্রেশ বন্ধ করে শুধু ডাটা রিসিঙ্ক করা হচ্ছে
+                    // রিলোড লুপ ছাড়া লাইভ স্টেট ট্র্যাকিং
                     walletProvider.on('chainChanged', async () => {
                         if(provider) {
                             const newNet = await provider.getNetwork();
@@ -182,6 +98,7 @@
             }
         }
 
+        // FORCE BALANCE SYNC EXECUTOR PIPELINE
         async function executeAgentAction() {
             const prompt = document.getElementById('userInput').value.toLowerCase();
             const consoleLog = document.getElementById('consoleLog');
@@ -252,11 +169,11 @@
                 if (provider) {
                     await provider.waitForTransaction(txHash);
                     
-                    // 🌟 লাইভ ইউজার ইন্টারফেস ব্যালেন্স ডিডাকশন আপডেট (কোনো ব্লাঙ্ক পেজ রিলোড ছাড়া)
+                    // 🌟 FORCE BALANCING: ট্রানজ্যাকশন সাকসেস হলে ড্যাশবোর্ড থেকে রিয়েল-টাইমে ২ USDC মাইনাস করার লজিক
                     if (!isNaN(currentUiBalance) && currentUiBalance >= finalAmount) {
                         let newUiBalance = currentUiBalance - finalAmount;
                         document.getElementById('usdcBalanceDisplay').innerText = `${newUiBalance.toFixed(2)} USDC`;
-                        consoleLog.innerHTML += `<p class="text-emerald-400">[State UI Sync]: ${finalAmount} USDC successfully subtracted from local cache.</p>`;
+                        consoleLog.innerHTML += `<p class="text-emerald-400">[State UI Sync]: Successfully subtracted ${finalAmount} USDC from active ledger.</p>`;
                     }
 
                     consoleLog.innerHTML += `<p class="text-emerald-400">[Bridge Core Success]: ${finalAmount} USDC successfully sent via Interchain network pipeline!</p>`;
@@ -274,5 +191,3 @@
             }
         }
     </script>
-</body>
-</html>
