@@ -27,7 +27,6 @@
             <select id="chainSelector" onchange="handleNetworkSwitch()" class="bg-slate-800 border border-slate-700 text-xs font-mono rounded-full px-4 py-2 text-cyan-400 focus:outline-none cursor-pointer">
                 <option value="11155111" selected>🌐 Ethereum Sepolia</option>
                 <option value="421614">⚡ Arbitrum Sepolia</option>
-                <!-- আপনি যদি Arc Testnet এর chainId জানেন, তাহলে 0x... এর জায়গায় সেটি বসিয়ে নেবেন (যেমন: 404) -->
                 <option value="404">🌀 ARC Dev-Testnet</option>
             </select>
 
@@ -112,12 +111,12 @@
                 hexId: "0x66eee",
                 explorer: "https://sepolia.arbiscan.io/tx/"
             },
-            "404": { // Assuming ARC Testnet ID is 404, replace if needed
+            "404": { 
                 name: "ARC Dev-Testnet",
                 usdcAddress: "0x3600000000000000000000000000000000000000",
                 decimals: 6,
-                hexId: "0x194", // Hex of 404
-                explorer: "https://explorer.arc.market/tx/" // Example explorer URL
+                hexId: "0x194", 
+                explorer: "https://explorer.arc.market/tx/" 
             }
         };
 
@@ -126,7 +125,6 @@
             "function transfer(address to, uint256 amount) returns (bool)"
         ];
 
-        // Fetch current active config parameters
         function getActiveConfig() {
             const selectedId = document.getElementById('chainSelector').value;
             return networkRegistry[selectedId];
@@ -148,7 +146,6 @@
 
                     consoleLog.innerHTML += `<p class="text-emerald-400">[RPC Live]: Connected to ${userWalletAddress}</p>`;
                     
-                    // Trigger network alignment immediately upon connection
                     await handleNetworkSwitch();
                 } catch (error) {
                     consoleLog.innerHTML += `<p class="text-red-400">[Error]: Connection signature denied.</p>`;
@@ -158,6 +155,7 @@
             }
         }
 
+        // FORCE HANDSHAKE SWITCH FIX
         async function handleNetworkSwitch() {
             const config = getActiveConfig();
             const consoleLog = document.getElementById('consoleLog');
@@ -166,7 +164,7 @@
             if (!window.ethereum || !userWalletAddress) return;
 
             try {
-                // Request MetaMask to switch chain dynamically
+                // Force MetaMask to switch chain dynamically
                 await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: config.hexId }],
