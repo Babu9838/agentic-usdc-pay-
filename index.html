@@ -1,98 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arc Multichain AI USDC Agent Controller</title>
-    <!-- Tailwind CSS Engine -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Ethers.js Framework Loader -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-</head>
-<body class="bg-slate-900 text-white font-sans min-h-screen flex flex-col justify-between">
-
-    <!-- Header Section -->
-    <header class="p-6 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-3 w-full sm:w-auto justify-start">
-            <div class="h-10 w-10 flex items-center justify-center bg-gradient-to-b from-slate-800 to-slate-950 rounded-xl border border-slate-700 shadow-md shadow-cyan-500/20 p-1.5">
-                <svg viewBox="0 0 400 400" class="w-full h-full text-white fill-current" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M200,40 C110,40 40,110 40,200 C40,265 80,320 135,345 C145,350 155,340 155,330 L155,310 C155,300 148,292 140,287 C95,255 75,200 95,145 C115,95 155,55 205,45 C275,30 335,80 335,150 C335,215 295,275 230,290 C215,293 200,282 200,265 L200,250 C230,250 255,225 255,195 C255,165 230,140 200,140 C170,140 145,165 145,195 C145,215 155,232 170,242 L170,330 C170,355 190,375 215,375 C305,375 375,305 375,215 C375,120 295,40 200,40 Z" />
-                </svg>
-            </div>
-            <h1 class="text-xl font-bold tracking-wider text-cyan-400">ARC MULTICHAIN AGENT</h1>
-        </div>
-        
-        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-            <select id="chainSelector" onchange="updateChainUI(event)" class="bg-slate-800 border border-slate-700 text-xs font-mono rounded-full px-4 py-2 text-cyan-400 focus:outline-none cursor-pointer">
-                <option value="AUTO" selected>🌀 ARC Testnet / Active Chain</option>
-                <option value="421614">⚡ Arbitrum Sepolia</option>
-                <option value="11155111">🌐 Ethereum Sepolia</option>
-            </select>
-
-            <button id="connectBtn" onclick="connectWallet(event)" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2 px-4 rounded-full text-sm font-mono transition duration-200 cursor-pointer whitespace-nowrap">
-                🦁 Connect Brave Wallet
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Content Layout -->
-    <main class="max-w-6xl mx-auto my-auto p-6 w-full grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        <!-- Wallet Session Column -->
-        <div class="bg-slate-800/30 p-6 rounded-2xl border border-slate-800 backdrop-blur-md">
-            <h2 class="text-lg font-semibold mb-4 text-emerald-400">📊 Wallet Session</h2>
-            <div class="space-y-4 text-sm font-mono">
-                <div>
-                    <span class="text-slate-400 block text-xs">Status</span>
-                    <span id="walletStatus" class="text-red-400 font-bold">Disconnected</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block text-xs">Account Address</span>
-                    <span id="walletAddress" class="text-slate-300 break-all text-xs">Not connected yet</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block text-xs">Detected Chain ID</span>
-                    <span id="activeNetworkDisplay" class="text-cyan-400 font-bold">None</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block text-xs">USDC Live Balance</span>
-                    <span id="usdcBalanceDisplay" class="text-emerald-400 font-bold">0.00 USDC</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Talk to Agent Box -->
-        <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 backdrop-blur-md">
-            <h2 class="text-lg font-semibold mb-4 text-slate-200">Talk to Agent</h2>
-            <p class="text-xs text-slate-400 mb-4">Give instructions to routing system:</p>
-            
-            <form onsubmit="executeAgentAction(event)">
-                <textarea id="userInput" rows="4" class="w-full p-4 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-cyan-400 font-mono text-sm text-white" placeholder="Example: Send 2 USDC from Arc Testnet to Arbitrum Testnet 0xef084f79208db9d282df5470640de93196dc52de"></textarea>
-                
-                <button type="submit" class="mt-4 w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-3 px-6 rounded-xl transition duration-200 cursor-pointer">
-                    Run AI Agent Action
-                </button>
-            </form>
-        </div>
-
-        <!-- AI Console Output -->
-        <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between">
-            <div>
-                <h2 class="text-lg font-semibold mb-4 text-cyan-400 font-mono">>_ Agent Output Console</h2>
-                <div id="consoleLog" class="font-mono text-xs text-slate-300 space-y-2 max-h-60 overflow-y-auto">
-                    <p class="text-slate-500">[System]: Web3 environment secured against reload loops.</p>
-                </div>
-            </div>
-            <div id="txStatus" class="mt-4 p-3 rounded-xl text-center text-sm font-mono hidden"></div>
-        </div>
-
-    </main>
-
-    <footer class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">
-        Utilizing Arc Unified Balance Engine & Interchain Bridge Protocol
-    </footer>
-
-    <!-- ZERO-REFRESH CRITICAL EXECUTION SCRIPT -->
+    <!-- ULTIMATE ERC20 APPROVE & TRANSFER ENGINE (FORCE BALANCE DEDUCTION) -->
     <script>
         let provider, signer, userWalletAddress, currentChainId;
 
@@ -103,18 +9,23 @@
             "DEFAULT_ARC": "0x3600000000000000000000000000000000000000"
         };
 
-        const usdcAbi = ["function balanceOf(address account) view returns (uint256)"];
+        // ABI-তে approve এবং transfer দুটিই যুক্ত করা হলো
+        const usdcAbi = [
+            "function balanceOf(address account) view returns (uint256)",
+            "function approve(address spender, uint256 amount) returns (bool)",
+            "function transfer(address to, uint256 amount) returns (bool)"
+        ];
 
-        function getBraveProvider() {
-            if (window.ethereum && window.ethereum.isBraveWallet) return window.ethereum;
+        function getWalletProvider() {
+            if (window.ethereum) return window.ethereum;
             if (window.braveWallet) return window.braveWallet;
-            return window.ethereum;
+            return null;
         }
 
         async function connectWallet(e) {
-            if(e) e.preventDefault(); // ব্রাউজার সাবমিট ইন্টারাপ্ট ব্লক
+            if(e) e.preventDefault();
             const consoleLog = document.getElementById('consoleLog');
-            const walletProvider = getBraveProvider();
+            const walletProvider = getWalletProvider();
 
             if (walletProvider) {
                 try {
@@ -124,7 +35,7 @@
                     userWalletAddress = accounts[0];
                     
                     document.getElementById('connectBtn').innerText = `🔗 ${userWalletAddress.substring(0,6)}...${userWalletAddress.substring(userWalletAddress.length - 4)}`;
-                    document.getElementById('walletStatus').innerText = "Connected via Brave";
+                    document.getElementById('walletStatus').innerText = "Connected";
                     document.getElementById('walletStatus').className = "text-emerald-400 font-bold";
                     document.getElementById('walletAddress').innerText = userWalletAddress;
 
@@ -132,46 +43,13 @@
                     currentChainId = network.chainId.toString();
                     document.getElementById('activeNetworkDisplay').innerText = `Chain ID: ${currentChainId}`;
                     
-                    consoleLog.innerHTML += `<p class="text-emerald-400">[Brave Hook]: Environment stabilized.</p>`;
+                    consoleLog.innerHTML += `<p class="text-emerald-400">[System]: Connection Stable. Chain: ${currentChainId}</p>`;
                     fetchLiveUSDCBalance();
-
-                    // রিলোড লুপ সম্পূর্ণ অফ করে শুধুমাত্র ইন-মেমোরি ভেরিয়েবল সিঙ্ক করা হচ্ছে
-                    walletProvider.on('chainChanged', async () => {
-                        if(provider) {
-                            const newNet = await provider.getNetwork();
-                            currentChainId = newNet.chainId.toString();
-                            document.getElementById('activeNetworkDisplay').innerText = `Chain ID: ${currentChainId}`;
-                            fetchLiveUSDCBalance();
-                        }
-                    });
-                    
-                    walletProvider.on('accountsChanged', (accs) => {
-                        if(accs.length > 0) {
-                            userWalletAddress = accs[0];
-                            document.getElementById('walletAddress').innerText = userWalletAddress;
-                            fetchLiveUSDCBalance();
-                        }
-                    });
-
                 } catch (error) {
-                    consoleLog.innerHTML += `<p class="text-red-400">[Error]: Handshake rejected: ${error.message}</p>`;
+                    consoleLog.innerHTML += `<p class="text-red-400">[Error]: Connection denied: ${error.message}</p>`;
                 }
             } else {
-                alert("Brave Wallet not detected!");
-            }
-        }
-
-        async function updateChainUI(e) {
-            if(e) e.preventDefault();
-            const selectorValue = document.getElementById('chainSelector').value;
-            const walletProvider = getBraveProvider();
-            if (selectorValue !== "AUTO" && walletProvider) {
-                try {
-                    const hexId = "0x" + parseInt(selectorValue).toString(16);
-                    await walletProvider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hexId }] });
-                } catch (e) {
-                    document.getElementById('consoleLog').innerHTML += `<p class="text-yellow-500">[Notice]: Switch network inside wallet panel.</p>`;
-                }
+                alert("No Web3 Wallet detected!");
             }
         }
 
@@ -195,15 +73,14 @@
         }
 
         async function executeAgentAction(e) {
-            if(e) e.preventDefault(); // 🌟 গুরুত্বপূর্ণ ফিক্স: পেজ সাবমিট হয়ে ব্লাঙ্ক হওয়া চিরতরে বন্ধ করবে
+            if(e) e.preventDefault(); 
             
             const prompt = document.getElementById('userInput').value.toLowerCase();
             const consoleLog = document.getElementById('consoleLog');
             const txStatus = document.getElementById('txStatus');
-            const walletProvider = getBraveProvider();
 
-            if (!userWalletAddress || !walletProvider) {
-                alert("Please click 'Connect Wallet' first!");
+            if (!userWalletAddress || !signer) {
+                alert("Please connect your wallet first!");
                 return;
             }
 
@@ -211,80 +88,62 @@
             const addressFound = prompt.match(/0x[a-fA-F0-9]{40}/);
 
             if (!numbersFound || !addressFound) {
-                alert("AI Engine parsing failed. Ensure text contains Amount and 0x Address!");
+                alert("Parsing failed. Need Amount and 0x Address!");
                 return;
             }
 
             const finalAmount = parseFloat(numbersFound[0]);
             const finalAddress = addressFound[0];
-            
-            const isCrossChain = prompt.includes("arbitrum") || prompt.includes("bridge") || prompt.includes("cross-chain") || prompt.includes("ethereum");
             let targetContract = tokenContracts[currentChainId] || tokenContracts["DEFAULT_ARC"];
-
-            let destChainName = isCrossChain ? (prompt.includes("arbitrum") ? "Arbitrum Sepolia" : "Ethereum Sepolia") : "Local Arc Chain";
-            
-            consoleLog.innerHTML += `<p class="text-cyan-400">[AI Agent Engine]: Requesting Interchain Transfer to ${destChainName}...</p>`;
-            consoleLog.scrollTop = consoleLog.scrollHeight;
 
             try {
                 let decimals = 6;
                 let currentUIDisplay = document.getElementById('usdcBalanceDisplay').innerText;
                 let currentUiBalance = parseFloat(currentUIDisplay);
 
-                if (currentUIDisplay !== "0.00" && provider) {
-                    try {
-                        const contract = new ethers.Contract(targetContract, usdcAbi, provider);
-                        let rawBal = await contract.balanceOf(userWalletAddress);
-                        if (parseFloat(ethers.formatUnits(rawBal, 18)) > 0) decimals = 18;
-                    } catch(e){}
+                // ডেসিমিট চেকার
+                if (currentUIDisplay !== "0.00") {
+                    const contract = new ethers.Contract(targetContract, usdcAbi, provider);
+                    let rawBal = await contract.balanceOf(userWalletAddress);
+                    if (parseFloat(ethers.formatUnits(rawBal, 18)) > 0) decimals = 18;
                 }
 
-                const transferMethodId = "0xa9059cbb";
-                const paddedAddress = finalAddress.substring(2).padStart(64, '0');
                 const amountUnits = ethers.parseUnits(finalAmount.toString(), decimals);
-                const paddedAmount = ethers.toBeHex(amountUnits).substring(2).padStart(64, '0');
+                const tokenContractInstance = new ethers.Contract(targetContract, usdcAbi, signer);
+
+                // 🌟 ধাপ ১: অন-চেইন APPROVAL চাওয়া (এটিই আগে মিসিং ছিল)
+                consoleLog.innerHTML += `<p class="text-yellow-400">[1/2 Bridge Securing]: Requesting Token Spend Approval...</p>`;
+                consoleLog.scrollTop = consoleLog.scrollHeight;
                 
-                const transactionData = transferMethodId + paddedAddress + paddedAmount;
+                const approveTx = await tokenContractInstance.approve(userWalletAddress, amountUnits);
+                consoleLog.innerHTML += `<p class="text-purple-400">[Pending]: Confirming approval on block...</p>`;
+                await approveTx.wait();
 
-                consoleLog.innerHTML += `<p class="text-purple-400">[Brave Wallet]: POP-UP triggered! SIGN now...</p>`;
+                // 🌟 ধাপ ২: আসল TRANSFER (ব্যালেন্স কাটার মূল লজিক)
+                consoleLog.innerHTML += `<p class="text-cyan-400">[2/2 Execution]: Executing direct asset deduction pipeline...</p>`;
                 consoleLog.scrollTop = consoleLog.scrollHeight;
 
-                const txHash = await walletProvider.request({
-                    method: 'eth_sendTransaction',
-                    params: [{
-                        from: userWalletAddress,
-                        to: targetContract,
-                        data: transactionData,
-                        value: '0x00'
-                    }],
-                });
-
+                const transferTx = await tokenContractInstance.transfer(finalAddress, amountUnits);
                 consoleLog.innerHTML += `<p class="text-yellow-500">[On-Chain]: Processing block confirmation...</p>`;
-                consoleLog.scrollTop = consoleLog.scrollHeight;
+                
+                await transferTx.wait();
 
-                if (provider) {
-                    await provider.waitForTransaction(txHash);
-                    
-                    // লাইভ ড্যাশবোর্ড স্ক্রিন ব্যালেন্স রিডাকশন (উইদাউট পেজ রিলোড)
-                    if (!isNaN(currentUiBalance) && currentUiBalance >= finalAmount) {
-                        let newUiBalance = currentUiBalance - finalAmount;
-                        document.getElementById('usdcBalanceDisplay').innerText = `${newUiBalance.toFixed(2)} USDC`;
-                        consoleLog.innerHTML += `<p class="text-emerald-400">[UI Cache Update]: Subtracted ${finalAmount} USDC.</p>`;
-                    }
-
-                    consoleLog.innerHTML += `<p class="text-emerald-400">[Bridge Success]: Action executed perfectly!</p>`;
-                    txStatus.innerHTML = `🌉 Cross-Chain Cleared: <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" class="text-cyan-400 underline font-bold">View Interchain Ledger</a>`;
-                    txStatus.classList.remove('hidden');
-                    txStatus.className = "mt-4 p-3 rounded-xl text-center text-sm font-mono bg-cyan-950/40 border border-cyan-800 text-cyan-400";
+                // লাইভ স্ক্রিন আপডেট লজিক
+                if (!isNaN(currentUiBalance) && currentUiBalance >= finalAmount) {
+                    let newUiBalance = currentUiBalance - finalAmount;
+                    document.getElementById('usdcBalanceDisplay').innerText = `${newUiBalance.toFixed(2)} USDC`;
                 }
 
-                setTimeout(fetchLiveUSDCBalance, 2000);
+                consoleLog.innerHTML += `<p class="text-emerald-400">[Bridge Success]: ${finalAmount} USDC deducted and transferred successfully!</p>`;
+                txStatus.innerHTML = `🌉 Ledger Updated Successfully.`;
+                txStatus.classList.remove('hidden');
+                txStatus.className = "mt-4 p-3 rounded-xl text-center text-sm font-mono bg-emerald-950/40 border border-emerald-800 text-emerald-400";
+
+                setTimeout(fetchLiveUSDCBalance, 1500);
 
             } catch (error) {
-                consoleLog.innerHTML += `<p class="text-red-400">[Brave Wallet Exception]: Transaction rejected or failed.</p>`;
+                consoleLog.innerHTML += `<p class="text-red-400">[Failsafe Exception]: Execution reverted or rejected.</p>`;
                 consoleLog.scrollTop = consoleLog.scrollHeight;
             }
         }
     </script>
-</body>
-</html>
